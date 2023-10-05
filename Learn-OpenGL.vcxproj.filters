@@ -34,5 +34,8 @@
     <ClInclude Include="Source2.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
