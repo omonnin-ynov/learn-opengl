@@ -10,5 +10,5 @@ void main()
 {
     gl_Position = vec4(aPos.x, -aPos.y, aPos.z, 1); // see how we directly give a vec3 to vec4's constructor
     vertexPos = gl_Position; // set the output variable to a dark-red color
-    TexCoord = aTexCoord;
+    TexCoord = aTexCoord*2;
 }
