@@ -5,11 +5,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
+    const float cameraSpeed = 0.05f; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 std::string readFile(std::string filePath) {
@@ -224,6 +238,8 @@ int main() {
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // time
+    double startTime = glfwGetTime();
 
     glEnable(GL_DEPTH_TEST);
     // Main Loop
@@ -232,10 +248,9 @@ int main() {
         processInput(window);
 
         // setup coordinate systems
-        glm::mat4 view = glm::mat4(1.0f);
-        // note that we're translating the scene in the reverse direction of where we want to move
-        view = glm::rotate(view, glm::radians(15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(0.0f, -2.0f, -4.0f));
+        glm::mat4 view;
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
         int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
@@ -275,6 +290,10 @@ int main() {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
+            if ((i-1) % 3 == 0)
+            {
+                angle += (glfwGetTime() - startTime) * 20.0f;
+            }
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
