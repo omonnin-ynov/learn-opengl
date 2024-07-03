@@ -5,17 +5,20 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-
+bool firstMouse = true;
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+
+float deltaTime = 0.0f;	// Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
 
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
-    const float cameraSpeed = 0.05f; // adjust accordingly
+    const float cameraSpeed = 5.0f * deltaTime; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -24,6 +27,44 @@ void processInput(GLFWwindow* window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+glm::vec3 direction;
+float cameraPitch = 0.0f;
+float cameraYaw = -90.0f;
+
+double cursorPosX = 0.0f;
+double cursorPosY = 0.0f;
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse) // initially set to true
+    {
+        cursorPosX = xpos;
+        cursorPosY = ypos;
+        firstMouse = false;
+    }
+
+    float deltaX = xpos - cursorPosX;
+    float deltaY = cursorPosY - ypos;
+    cursorPosX = xpos;
+    cursorPosY = ypos;
+
+    constexpr float cameraYawSpeed = 0.1f;
+    constexpr float cameraPitchSpeed = 0.1f;
+
+    cameraPitch += deltaX * cameraYawSpeed;
+    cameraYaw += deltaY * cameraPitchSpeed;
+
+    if(cameraPitch > 89.0f)
+        cameraPitch =  89.0f;
+    if(cameraPitch < -89.0f)
+        cameraPitch = -89.0f;
+
+    direction.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
+    direction.y = sin(glm::radians(cameraPitch));
+    direction.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
+    cameraFront = glm::normalize(direction);
 }
 
 std::string readFile(std::string filePath) {
@@ -49,27 +90,6 @@ std::string readFile(std::string filePath) {
     return text;
 }
 
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0";
-
-const char* fragmentShaderSource2 = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"FragColor = vec4(1.0f, 0.9f, 0.1f, 1.0f);\n"
-"}\0";
-
 int main() {
 
     glfwInit();
@@ -87,6 +107,9 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
+    
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -238,15 +261,19 @@ int main() {
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // time
+    // program start time
     double startTime = glfwGetTime();
 
     glEnable(GL_DEPTH_TEST);
     // Main Loop
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window);
-
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        
+        processInput(window);        
+        
         // setup coordinate systems
         glm::mat4 view;
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
