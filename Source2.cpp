@@ -74,13 +74,10 @@ int main() {
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    /// Shader lightingShader("./vertex.glsl", "./fragment.glsl");
     // Use our shader program
-    // lightingShader.use();
-    Shader litShader("./LightVertex.glsl","LightFragment.glsl");
-    litShader.use();
-    litShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-    litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+    Shader litShader("./vertex.glsl","./LitFragment.glsl");
+
+    Shader lightingCubeShader("./LightVertex.glsl", "./LightFragment.glsl");
 
     // rotate image upside down
     stbi_set_flip_vertically_on_load(true);
@@ -182,17 +179,35 @@ int main() {
         1, 2, 3    // second triangle
     };
 
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
+    glm::vec3 cubePositions[] = {
+             glm::vec3(0.0f,  0.0f,  0.0f),
+             glm::vec3(2.0f,  5.0f, -15.0f),
+             glm::vec3(-1.5f, -2.2f, -2.5f),
+             glm::vec3(-3.8f, -2.0f, -12.3f),
+             glm::vec3(2.4f, -0.4f, -3.5f),
+             glm::vec3(-1.7f,  3.0f, -7.5f),
+             glm::vec3(1.3f, -2.0f, -2.5f),
+             glm::vec3(1.5f,  2.0f, -2.5f),
+             glm::vec3(1.5f,  0.2f, -1.5f),
+             glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+    unsigned int cubeVAO;
+    glGenVertexArrays(1, &cubeVAO);
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
 
-    glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindVertexArray(cubeVAO);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
@@ -219,7 +234,7 @@ int main() {
     // we only need to bind to the VBO, the container's VBO's data already contains the data.
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // set the vertex attribute 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     float mixValue = 0.0f;
@@ -237,8 +252,16 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         
-        processInput(window);        
-        
+        processInput(window);
+
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+        litShader.use();
+        litShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+        litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+
         // setup coordinate systems
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(55.0f), 1280.0f / 800.0f, 0.1f, 100.0f);
@@ -255,23 +278,7 @@ int main() {
         }
         litShader.setFloat("mixValue", mixValue);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glm::vec3 cubePositions[] = {
-             glm::vec3( 0.0f,  0.0f,  0.0f), 
-             glm::vec3( 2.0f,  5.0f, -15.0f), 
-             glm::vec3(-1.5f, -2.2f, -2.5f),  
-             glm::vec3(-3.8f, -2.0f, -12.3f),  
-             glm::vec3( 2.4f, -0.4f, -3.5f),  
-             glm::vec3(-1.7f,  3.0f, -7.5f),  
-             glm::vec3( 1.3f, -2.0f, -2.5f),  
-             glm::vec3( 1.5f,  2.0f, -2.5f), 
-             glm::vec3( 1.5f,  0.2f, -1.5f), 
-             glm::vec3(-1.3f,  1.0f, -1.5f)  
-        };
-
-
-        glBindVertexArray(VAO);
+        glBindVertexArray(cubeVAO);
 
         for (unsigned int i = 0; i < 10; i++)
         {
@@ -283,17 +290,27 @@ int main() {
                 angle += (glfwGetTime() - startTime) * 20.0f;
             }
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            int modelLoc = glGetUniformLocation(litShader.ID, "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            litShader.setMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f));
+        lightingCubeShader.use();
+        lightingCubeShader.setMat4("projection", projection);
+        lightingCubeShader.setMat4("view", view);
+        lightingCubeShader.setMat4("model", model);
+
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &cubeVAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     glDeleteProgram(litShader.ID);

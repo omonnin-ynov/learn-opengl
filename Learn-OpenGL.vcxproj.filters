@@ -38,6 +38,9 @@
     <None Include="LightVertex.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="LitFragment.glsl">
+      <Filter>Source Files</Filter>
+    </None>
     <None Include="LightFragment.glsl">
       <Filter>Source Files</Filter>
     </None>
