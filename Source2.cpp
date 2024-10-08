@@ -1,71 +1,24 @@
 #include "Source2.h"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
+#include "Camera.h"
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow* window);
+
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = 0.0f;
+float lastY = 0.0f;
 bool firstMouse = true;
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
-
-float deltaTime = 0.0f;	// Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
-
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-    const float cameraSpeed = 5.0f * deltaTime; // adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-}
-
-glm::vec3 direction;
-float cameraPitch = 0.0f;
-float cameraYaw = -90.0f;
-
 double cursorPosX = 0.0f;
 double cursorPosY = 0.0f;
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    if (firstMouse) // initially set to true
-    {
-        cursorPosX = xpos;
-        cursorPosY = ypos;
-        firstMouse = false;
-    }
+float deltaTime = 0.0f;	// Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
+glm::vec3 direction;
 
-    float deltaX = xpos - cursorPosX;
-    float deltaY = cursorPosY - ypos;
-    cursorPosX = xpos;
-    cursorPosY = ypos;
-
-    constexpr float cameraYawSpeed = 0.1f;
-    constexpr float cameraPitchSpeed = 0.1f;
-
-    cameraPitch += deltaX * cameraYawSpeed;
-    cameraYaw += deltaY * cameraPitchSpeed;
-
-    if(cameraPitch > 89.0f)
-        cameraPitch =  89.0f;
-    if(cameraPitch < -89.0f)
-        cameraPitch = -89.0f;
-
-    direction.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-    direction.y = sin(glm::radians(cameraPitch));
-    direction.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-    cameraFront = glm::normalize(direction);
-}
 
 std::string readFile(std::string filePath) {
     std::string text{ "" };
@@ -121,13 +74,13 @@ int main() {
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    /// Shader shaderProgram("./vertex.glsl", "./fragment.glsl");
+    /// Shader lightingShader("./vertex.glsl", "./fragment.glsl");
     // Use our shader program
-    // shaderProgram.use();
-    Shader lightingShader("./LightVertex.glsl","LightFragment.glsl");
-    lightingShader.use();
-    lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-    lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+    // lightingShader.use();
+    Shader litShader("./LightVertex.glsl","LightFragment.glsl");
+    litShader.use();
+    litShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+    litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
     // rotate image upside down
     stbi_set_flip_vertically_on_load(true);
@@ -257,8 +210,8 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, texture2);
 
     // set texture index
-    shaderProgram.setInt("texture1", 0);
-    shaderProgram.setInt("texture2", 1);
+    litShader.setInt("texture1", 0);
+    litShader.setInt("texture2", 1);
 
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
@@ -269,7 +222,7 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    float mixValue = 0.2f;
+    float mixValue = 0.0f;
     // uncomment this call to draw in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -287,24 +240,23 @@ int main() {
         processInput(window);        
         
         // setup coordinate systems
-        glm::mat4 view;
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-        int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(55.0f), 1280.0f / 800.0f, 0.1f, 100.0f);
-        int projectionLoc = glGetUniformLocation(shaderProgram.ID, "projection");
+        int projectionLoc = glGetUniformLocation(litShader.ID, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        glm::mat4 view = camera.GetViewMatrix();
+
+        int viewLoc = glGetUniformLocation(litShader.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             mixValue += 0.1f;
         }
         else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
             mixValue -= 0.1f;
-        };
-        shaderProgram.setFloat("mixValue", mixValue);
+        }
+        litShader.setFloat("mixValue", mixValue);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -334,7 +286,7 @@ int main() {
                 angle += (glfwGetTime() - startTime) * 20.0f;
             }
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
+            int modelLoc = glGetUniformLocation(litShader.ID, "model");
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -347,9 +299,65 @@ int main() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    glDeleteProgram(shaderProgram.ID);
+    glDeleteProgram(litShader.ID);
 
     glfwTerminate();
     return 0;
 }
 
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
