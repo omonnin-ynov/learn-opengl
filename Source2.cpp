@@ -242,13 +242,10 @@ int main() {
         // setup coordinate systems
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(55.0f), 1280.0f / 800.0f, 0.1f, 100.0f);
-        int projectionLoc = glGetUniformLocation(litShader.ID, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        litShader.setMat4("projection", projection);
 
         glm::mat4 view = camera.GetViewMatrix();
-
-        int viewLoc = glGetUniformLocation(litShader.ID, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        litShader.setMat4("view", view);
 
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             mixValue += 0.1f;
