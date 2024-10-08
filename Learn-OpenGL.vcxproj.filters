@@ -32,6 +32,12 @@
     <None Include="fragment.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="LightVertex.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="LightFragment.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source2.h">

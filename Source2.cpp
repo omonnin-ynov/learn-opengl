@@ -121,7 +121,13 @@ int main() {
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    Shader shaderProgram("./vertex.glsl", "./fragment.glsl");
+    /// Shader shaderProgram("./vertex.glsl", "./fragment.glsl");
+    // Use our shader program
+    // shaderProgram.use();
+    Shader lightingShader("./LightVertex.glsl","LightFragment.glsl");
+    lightingShader.use();
+    lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+    lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
     // rotate image upside down
     stbi_set_flip_vertically_on_load(true);
@@ -172,9 +178,6 @@ int main() {
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-
-    // Use our shader program
-    shaderProgram.use();
 
     // Create VAO, VBO, EBO
     float vertices[] = {
@@ -256,6 +259,15 @@ int main() {
     // set texture index
     shaderProgram.setInt("texture1", 0);
     shaderProgram.setInt("texture2", 1);
+
+    unsigned int lightVAO;
+    glGenVertexArrays(1, &lightVAO);
+    glBindVertexArray(lightVAO);
+    // we only need to bind to the VBO, the container's VBO's data already contains the data.
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // set the vertex attribute 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     float mixValue = 0.2f;
     // uncomment this call to draw in wireframe polygons.
