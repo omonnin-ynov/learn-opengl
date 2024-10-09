@@ -208,8 +208,9 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
     //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     //glEnableVertexAttribArray(2);
 
@@ -225,13 +226,9 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, texture2);
 
     // set texture index
+    litShader.use();
     litShader.setInt("texture1", 0);
     litShader.setInt("texture2", 1);
-    litShader.setVec3("lightPos", lightPos);
-    litShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-    litShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-    litShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-    litShader.setFloat("material.shininess", 32.0f);
 
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
@@ -264,8 +261,15 @@ int main() {
 
 
         litShader.use();
-        litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         litShader.setVec3("viewPos", camera.Pos);
+        litShader.setVec3("light.position", lightPos);
+        litShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        litShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
+        litShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        litShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+        litShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+        litShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        litShader.setFloat("material.shininess", 32.0f);
 
         // setup coordinate systems
         glm::mat4 projection = glm::mat4(1.0f);
