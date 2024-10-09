@@ -228,6 +228,10 @@ int main() {
     litShader.setInt("texture1", 0);
     litShader.setInt("texture2", 1);
     litShader.setVec3("lightPos", lightPos);
+    litShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+    litShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+    litShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+    litShader.setFloat("material.shininess", 32.0f);
 
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
@@ -260,7 +264,6 @@ int main() {
 
 
         litShader.use();
-        litShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
         litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
         litShader.setVec3("viewPos", camera.Pos);
 
