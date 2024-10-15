@@ -271,6 +271,10 @@ int main() {
         litShader.use();
         litShader.setVec3("viewPos", camera.Pos);
         litShader.setVec3("light.position", lightPos);
+        //litShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+        litShader.setFloat("light.constant", 1.0f);
+        litShader.setFloat("light.linear", 0.045f);
+        litShader.setFloat("light.quadratic", 0.0075f);
         litShader.setVec3("light.ambient", ambientColor);
         litShader.setVec3("light.diffuse", diffuseColor); // darken diffuse light a bit
         litShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
