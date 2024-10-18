@@ -270,14 +270,20 @@ int main() {
 
         litShader.use();
         litShader.setVec3("viewPos", camera.Pos);
-        litShader.setVec3("light.position", lightPos);
-        //litShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+        litShader.setVec3("light.position", camera.Pos);
+
+        litShader.setVec3("light.direction", camera.Front);
+        litShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+        litShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+
         litShader.setFloat("light.constant", 1.0f);
         litShader.setFloat("light.linear", 0.045f);
         litShader.setFloat("light.quadratic", 0.0075f);
+
         litShader.setVec3("light.ambient", ambientColor);
         litShader.setVec3("light.diffuse", diffuseColor); // darken diffuse light a bit
         litShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
         litShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
         litShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
         litShader.setFloat("material.shininess", 32.0f);
