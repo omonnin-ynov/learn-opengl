@@ -1,4 +1,6 @@
 #include "Model.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 void Model::loadModel(std::string path)
 {
@@ -56,8 +58,43 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
-           
+        aiFace face = mesh->mFaces[i];
+        for(unsigned int j = 0; j < face.mNumIndices; j++)
+        {
+            indices.push_back(face.mIndices[j]);
+        }
     }
+
+    if (mesh->mMaterialIndex >= (unsigned int)0)
+    {
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+        std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+
+        std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    }
+
+    return {vertices, indices, textures};
+}
+
+std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+{
+    std::vector<Texture> textures;
+    for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+    {
+        aiString str;
+        mat->GetTexture(type, i, &str);
+        Texture texture;
+        texture.id = TextureFromFile(str.C_Str(), directory);
+    }
+
+
+}
+
+unsigned Model::TextureFromFile(const char* path, const std::string& directory, bool gamma)
+{
 }
 
 void Model::Draw(Shader& shader)
