@@ -1,6 +1,11 @@
 #include "Source2.h"
 
+#include <windows.h>
+
 #include "Camera.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
