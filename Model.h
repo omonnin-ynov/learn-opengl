@@ -22,7 +22,7 @@ private:
     unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 
 public:
-    Model(char *path)
+    Model(const char *path)
     {
         loadModel(path);
     }

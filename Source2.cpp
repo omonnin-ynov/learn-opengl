@@ -1,11 +1,15 @@
 #include "Source2.h"
 
 #include <windows.h>
+#include <filesystem>
 
 #include "Camera.h"
+#include "Model.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#include "Mesh.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -86,6 +90,13 @@ int main() {
 
     // rotate image upside down
     stbi_set_flip_vertically_on_load(true);
+
+    // Load guitar backpack using Model
+    std::filesystem::path p = "models/backpack.obj";
+    auto pStr = absolute(p).string();
+    auto pCstr = pStr.c_str();
+    Model* backpack = new Model(pCstr);
+
     // Generate Texture buffer
     unsigned int texture1;
     glGenTextures(1, &texture1);
@@ -362,6 +373,8 @@ int main() {
 
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        backpack->Draw(litShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -1,5 +1,4 @@
 #include "Model.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 void Model::loadModel(std::string path)
@@ -12,8 +11,8 @@ void Model::loadModel(std::string path)
         std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
         return;
     }
-
-    directory = path.substr(0, path.find_last_of('/'));
+    // TODO does not work on linux but idgaf
+    directory = path.substr(0, path.find_last_of('\\'));
 
     processNode(scene->mRootNode, scene);
 }
@@ -21,7 +20,7 @@ void Model::loadModel(std::string path)
 void Model::processNode(aiNode* node, const aiScene* scene)
 {
     // process all the node's meshes
-    for (unsigned int i = 0; i < node->mNumChildren; i++)
+    for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         meshes.push_back(processMesh(mesh, scene));
@@ -44,7 +43,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         Vertex vertex;
 
         vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-        vertex.Normal = glm::vec3(mesh->mNormals[i], mesh->mNormals[i].y, mesh->mNormals[i].z);
+        vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
 
         // assimp allows different UVs for different textures but we don't care
         if (mesh->mTextureCoords[0])
@@ -65,16 +64,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         }
     }
 
-    if (mesh->mMaterialIndex >= (unsigned int)0)
-    {
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-        std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-        std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    }
+    std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
     return {vertices, indices, textures};
 }
@@ -114,7 +110,8 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
 {
     // Load texture
     std::string fileName = std::string(path);
-    fileName = directory + "/" + fileName;
+    // TODO does not work on linux
+    fileName = directory + "\\" + fileName;
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -133,7 +130,7 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
 
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         // set the texture wrapping/filtering options (on the currently bound texture object)
