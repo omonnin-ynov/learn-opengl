@@ -248,15 +248,15 @@ int main() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Bind textures to available slots
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE10);
     glBindTexture(GL_TEXTURE_2D, texture1);
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE11);
     glBindTexture(GL_TEXTURE_2D, texture2);
 
     // set texture index
     litShader.use();
-    litShader.setInt("material.diffuse", 0);
-    litShader.setInt("material.specular", 1);
+    litShader.setInt("material.diffuse", 10);
+    litShader.setInt("material.specular", 11);
 
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
@@ -286,6 +286,8 @@ int main() {
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glActiveTexture(GL_TEXTURE0);
 
         glm::vec3 lightColor{1.0f, 1.0f, 1.0f};
         //lightColor.x = sin(glfwGetTime() * 2.0f);
@@ -376,6 +378,8 @@ int main() {
 
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        glActiveTexture(GL_TEXTURE0);
 
         defaultShader.use();
         defaultShader.setMat4("projection", projection);
