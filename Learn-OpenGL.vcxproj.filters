@@ -50,6 +50,12 @@
     <None Include="LightFragment.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="DefaultFragment.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="DefaultVertex.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source2.h">

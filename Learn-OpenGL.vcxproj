@@ -147,6 +147,8 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="glad\glad.c" />
+    <None Include="DefaultFragment.glsl" />
+    <None Include="DefaultVertex.glsl" />
     <None Include="LightFragment.glsl">
       <FileType>CppCode</FileType>
     </None>

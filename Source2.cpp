@@ -58,6 +58,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Window
@@ -87,6 +88,8 @@ int main() {
     Shader litShader("./vertex.glsl","./LitFragment.glsl");
 
     Shader lightingCubeShader("./LightVertex.glsl", "./LightFragment.glsl");
+
+    Shader defaultShader("./DefaultVertex.glsl", "DefaultFragment.glsl");
 
     // rotate image upside down
     stbi_set_flip_vertically_on_load(true);
@@ -374,7 +377,11 @@ int main() {
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        backpack->Draw(litShader);
+        defaultShader.use();
+        defaultShader.setMat4("projection", projection);
+        defaultShader.setMat4("view", view);
+        defaultShader.setMat4("model", glm::mat4(1.0f));
+        backpack->Draw(defaultShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
