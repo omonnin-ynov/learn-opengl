@@ -382,9 +382,52 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
 
         defaultShader.use();
+
+        defaultShader.setVec3("viewPos", camera.Pos);
         defaultShader.setMat4("projection", projection);
         defaultShader.setMat4("view", view);
         defaultShader.setMat4("model", glm::mat4(1.0f));
+
+        // directional light
+        defaultShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        defaultShader.setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
+        defaultShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+        defaultShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+        // point light 1
+        defaultShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+        defaultShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+        defaultShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+        defaultShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        defaultShader.setFloat("pointLights[0].constant", 1.0f);
+        defaultShader.setFloat("pointLights[0].linear", 0.09f);
+        defaultShader.setFloat("pointLights[0].quadratic", 0.032f);
+        // point light 2
+        defaultShader.setVec3("pointLights[1].position", pointLightPositions[1]);
+        defaultShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+        defaultShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+        defaultShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+        defaultShader.setFloat("pointLights[1].constant", 1.0f);
+        defaultShader.setFloat("pointLights[1].linear", 0.09f);
+        defaultShader.setFloat("pointLights[1].quadratic", 0.032f);
+        // point light 3
+        defaultShader.setVec3("pointLights[2].position", pointLightPositions[2]);
+        defaultShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+        defaultShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+        defaultShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+        defaultShader.setFloat("pointLights[2].constant", 1.0f);
+        defaultShader.setFloat("pointLights[2].linear", 0.09f);
+        defaultShader.setFloat("pointLights[2].quadratic", 0.032f);
+        // point light 4
+        defaultShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+        defaultShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+        defaultShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+        defaultShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+        defaultShader.setFloat("pointLights[3].constant", 1.0f);
+        defaultShader.setFloat("pointLights[3].linear", 0.09f);
+        defaultShader.setFloat("pointLights[3].quadratic", 0.032f);
+
+        defaultShader.setFloat("shininess", 32.0f);
+
         backpack->Draw(defaultShader);
 
         glfwSwapBuffers(window);

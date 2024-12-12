@@ -40,7 +40,7 @@ void Mesh::Draw(Shader& shader)
     for (unsigned int i = 0; i < textures.size(); i++)
     {
         // TODO not robust when textures aren't diffuse or specular
-        glActiveTexture(GL_TEXTURE0 + 1 + i); // activate proper texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + 2 + i); // activate proper texture unit before binding
         // retrieve texture number (the N in diffuse_textureN)
         std::string number;
         std::string name = textures[i].type;
@@ -50,7 +50,7 @@ void Mesh::Draw(Shader& shader)
             number = std::to_string(specularNr++);
                 
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
-        shader.setInt(("material." + name + number).c_str(), textures[i].id + 1);
+        shader.setInt((name + number).c_str(), textures[i].id + 1);
     }
 
     // draw mesh
