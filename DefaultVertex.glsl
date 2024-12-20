@@ -8,7 +8,6 @@ uniform mat4 view;
 uniform mat4 projection;
 
 out vec2 TexCoord;
-out vec3 Normal;
 out vec3 FragPos;
 
 void main()
@@ -16,5 +15,4 @@ void main()
     gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1); // see how we directly give a vec3 to vec4's constructor
     TexCoord = aTexCoord;
     FragPos = vec3(model * vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(model))) * aNormal;
 }

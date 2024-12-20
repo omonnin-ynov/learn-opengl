@@ -426,7 +426,7 @@ int main() {
         defaultShader.setFloat("pointLights[3].linear", 0.09f);
         defaultShader.setFloat("pointLights[3].quadratic", 0.032f);
 
-        defaultShader.setFloat("shininess", 32.0f);
+        defaultShader.setFloat("shininess", 16.0f);
 
         backpack->Draw(defaultShader);
 
