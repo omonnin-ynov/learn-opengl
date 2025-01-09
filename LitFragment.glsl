@@ -65,7 +65,7 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 specular = light.specular * pow(max(dot(viewDir, reflectDir), 0.0), material.shininess) * vec3(texture(material.specular, TexCoord));
 
-    return (reflectDir);
+    return (ambient + diffuse + specular);
 }
 
 

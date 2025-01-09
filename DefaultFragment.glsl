@@ -44,7 +44,8 @@ vec3 calcPointLight(PointLight light, vec3 normal, vec3 FragPos, vec3 viewDir);
 
 void main()
 {
-    vec3 norm = mat3(transpose(inverse(model))) * normalize(cross(vec3(texture(texture_normal1, TexCoord)), Normal));
+    
+    vec3 norm = max(mat3(transpose(inverse(model))) * normalize(cross(vec3(texture(texture_normal1, TexCoord)), Normal)), mat3(transpose(inverse(model))) * normalize(Normal));
     vec3 viewDir = normalize(viewPos - FragPos);
 
     vec3 result = calcDirLight(dirLight, norm, viewDir);
